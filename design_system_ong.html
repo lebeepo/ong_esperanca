@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma ONG - Terceiro Setor</title>
+  <style>
+    /* =========================================
+       1. DESIGN SYSTEM (Variáveis)
+       ========================================= */
+    :root {
+      /* Cores */
+      --color-primary-base: #0056B3;
+      --color-primary-dark: #003D82;
+      --color-primary-light: #E6F0FA;
+      --color-secondary-base: #E65C00;
+      --color-secondary-dark: #CC5200;
+      --color-neutral-900: #212529;
+      --color-neutral-700: #495057;
+      --color-neutral-200: #E9ECEF;
+      --color-neutral-50:  #F8F9FA;
+      --color-surface:     #FFFFFF;
+
+      /* Tipografia */
+      --font-size-xs:   0.875rem; 
+      --font-size-base: 1rem;     
+      --font-size-md:   1.25rem;  
+      --font-size-lg:   1.5rem;   
+      --font-size-xl:   2rem;     
+
+      /* Espaçamentos */
+      --spacing-2xs: 0.25rem;  
+      --spacing-xs:  0.5rem;   
+      --spacing-sm:  1rem;     
+      --spacing-md:  1.5rem;   
+      --spacing-lg:  2rem;     
+      --spacing-xl:  3rem;     
+      --spacing-2xl: 5rem;     
+    }
+
+    /* Reset Base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--color-surface);
+      color: var(--color-neutral-900);
+      line-height: 1.6;
+    }
+
+    /* =========================================
+       2. MACRO ARQUITETURA (CSS Grid 12 Colunas)
+       ========================================= */
+    .grid-macro {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--spacing-sm);
+      width: 100%;
+      padding: var(--spacing-sm);
+    }
+
+    .header, .hero-section, .main-content, .sidebar, .footer {
+      grid-column: 1 / -1; /* Mobile: 12 colunas */
+    }
+
+    /* Breakpoint 1: Mobile Paisagem */
+    @media (min-width: 576px) {
+      .grid-macro {
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+      }
+    }
+
+    /* Breakpoint 2: Tablets */
+    @media (min-width: 768px) {
+      .main-content { grid-column: 1 / span 8; }
+      .sidebar { grid-column: 9 / span 4; }
+    }
+
+    /* Breakpoint 3: Desktops */
+    @media (min-width: 1024px) {
+      .grid-macro {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .main-content { grid-column: 1 / span 9; }
+      .sidebar { grid-column: 10 / span 3; }
+    }
+
+    /* Breakpoint 4: Widescreen */
+    @media (min-width: 1280px) {
+      .grid-macro { max-width: 1140px; gap: var(--spacing-lg); }
+      .hero-section { grid-column: 2 / span 10; }
+      .main-content { grid-column: 2 / span 7; }
+      .sidebar { grid-column: 9 / span 3; }
+    }
+
+    /* Breakpoint 5: Telas Panorâmicas */
+    @media (min-width: 1600px) {
+      .grid-macro { max-width: 1440px; gap: var(--spacing-xl); }
+      .header, .footer, .hero-section { grid-column: 2 / span 10; }
+      .main-content { grid-column: 3 / span 6; }
+      .sidebar { grid-column: 9 / span 2; }
+    }
+
+    /* =========================================
+       3. MICRO ARQUITETURA (Flexbox) & NAV
+       ========================================= */
+    .header-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-md) 0;
+      border-bottom: 1px solid var(--color-neutral-200);
+      position: relative;
+    }
+
+    .logo {
+      font-size: var(--font-size-lg);
+      font-weight: bold;
+      color: var(--color-primary-base);
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: var(--spacing-md);
+      list-style: none;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .nav-item { position: relative; }
+    
+    .nav-link {
+      text-decoration: none;
+      color: var(--color-neutral-700);
+      font-weight: 500;
+    }
+
+    /* Dropdown (Desktop) */
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--color-surface);
+      border: 1px solid var(--color-neutral-200);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      list-style: none;
+      padding: var(--spacing-sm);
+      min-width: 200px;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .nav-item:hover .dropdown-menu,
+    .nav-item:focus-within .dropdown-menu {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hamburger-btn {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* Navegação Mobile */
+    @media (max-width: 768px) {
+      .hamburger-btn { display: block; }
+      .nav-menu {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background: var(--color-surface);
+        flex-direction: column;
+        padding: var(--spacing-md);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transform: translateX(-100%);
+        z-index: 100;
+      }
+      .navbar.menu-open .nav-menu {
+        transform: translateX(0);
+      }
+      .dropdown-menu {
+        position: static;
+        visibility: visible;
+        opacity: 1;
+        transform: none;
+        box-shadow: none;
+        border: none;
+        border-left: 2px solid var(--color-primary-light);
+        padding-left: var(--spacing-md);
+        display: none;
+      }
+      .nav-item:hover .dropdown-menu { display: block; }
+    }
+
+    /* =========================================
+       4. ESTADOS INTERATIVOS E BOTÕES
+       ========================================= */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+
+    .btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: none;
+      border-radius: 4px;
+      font-size: var(--font-size-base);
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .btn-primary {
+      background-color: var(--color-secondary-base);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-secondary-dark);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-primary:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px var(--color-primary-light);
+    }
+
+    .btn-primary:active {
+      box-shadow: none;
+      transform: translateY(2px);
+    }
+
+    .btn-primary:disabled {
+      background-color: var(--color-neutral-200);
+      color: var(--color-neutral-700);
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* =========================================
+       5. COMPONENTES VISUAIS (Cards, Badges, etc)
+       ========================================= */
+    .action-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--color-neutral-50);
+      border: 1px solid var(--color-neutral-200);
+      border-radius: 8px;
+      padding: var(--spacing-md);
+    }
+
+    .action-card-body {
+      flex-grow: 1;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .action-card-footer {
+      margin-top: auto;
+    }
+
+    .badge-group {
+      display: flex;
+      gap: var(--spacing-xs);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      font-size: var(--font-size-xs);
+      font-weight: bold;
+      text-transform: uppercase;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+    }
+    .badge-success { background-color: #E8F5E9; color: #1B5E20; }
+    .badge-warning { background-color: #FFF3E0; color: #E65100; }
+
+    .alert {
+      display: flex;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm);
+      border-radius: 6px;
+      border-left: 4px solid;
+      margin-bottom: var(--spacing-md);
+      background-color: #E3F2FD;
+      border-color: #1976D2;
+      color: #0D47A1;
+    }
+
+    /* =========================================
+       6. FORMULÁRIOS (Validação Visual)
+       ========================================= */
+    .form-group {
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2xs);
+    }
+
+    .form-group label {
+      font-weight: 500;
+      font-size: var(--font-size-xs);
+    }
+
+    .form-control {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border: 2px solid var(--color-neutral-200);
+      border-radius: 4px;
+      font-size: var(--font-size-base);
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--color-primary-base);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    .form-control:not(:placeholder-shown):invalid {
+      border-color: #D32F2F;
+      background-color: #FFF0F0;
+    }
+
+    .form-control:not(:placeholder-shown):valid {
+      border-color: #2E7D32;
+    }
+
+    /* =========================================
+       7. TOAST NOTIFICATION
+       ========================================= */
+    .toast-container {
+      position: fixed;
+      bottom: var(--spacing-lg);
+      right: var(--spacing-lg);
+      z-index: 9999;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+      min-width: 300px;
+      padding: 12px 20px;
+      background-color: var(--color-neutral-900);
+      color: #FFFFFF;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      border-left: 4px solid #4CAF50;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .toast-close {
+      background: transparent;
+      border: none;
+      color: #A0A0A0;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MACRO GRID CONTAINER -->
+  <div class="grid-macro">
+
+    <!-- HEADER / NAV -->
+    <header class="header header-nav navbar" id="navbar">
+      <div class="logo">ONG Esperança</div>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu">☰</button>
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="#" class="nav-link">Início</a></li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">Projetos ▼</a>
+          <ul class="dropdown-menu">
+            <li><a href="#" class="nav-link">Educação</a></li>
+            <li><a href="#" class="nav-link">Saúde</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a href="#" class="nav-link">Transparência</a></li>
+      </ul>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="alert" role="alert">
+        <span>ℹ️</span>
+        <div><strong>Aviso Importante:</strong> A campanha de inverno encerra em 3 dias.</div>
+      </div>
+      <h1 style="font-size: var(--font-size-xl);">Transforme Vidas Hoje</h1>
+      <p style="font-size: var(--font-size-lg); color: var(--color-neutral-700);">Sua doação garante alimentação e educação para dezenas de famílias.</p>
+      
+      <div class="btn-group">
+        <button class="btn btn-primary">Doar Agora</button>
+        <button class="btn btn-primary" disabled>Campanha Encerrada (Ex. Disabled)</button>
+      </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="badge-group">
+        <span class="badge badge-warning">Urgente</span>
+        <span class="badge badge-success">Ativo</span>
+      </div>
+      
+      <!-- ACTION CARD (FLEXBOX) -->
+      <article class="action-card">
+        <div class="action-card-body">
+          <h2 style="font-size: var(--font-size-md);">Reforma da Escola Base</h2>
+          <p>Precisamos de materiais de construção e voluntários para pintar as salas de aula antes do retorno letivo.</p>
+        </div>
+        <div class="action-card-footer">
+          <button class="btn btn-primary" style="width: 100%;">Quero ser voluntário</button>
+        </div>
+      </article>
+    </main>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="action-card">
+        <h3 style="font-size: var(--font-size-md);">Cadastro Rápido</h3>
+        <form>
+          <div class="form-group">
+            <label for="email">E-mail (Validação Visual)</label>
+            <input type="email" id="email" class="form-control" placeholder="seu@email.com" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-container" id="toastBox">
+    <div class="toast" role="status" aria-live="polite">
+      <div>Doação processada com sucesso!</div>
+      <button class="toast-close" onclick="document.getElementById('toastBox').style.display='none'">×</button>
+    </div>
+  </div>
+
+  <!-- Lógica simples para o menu Mobile -->
+  <script>
+    const btn = document.getElementById('hamburgerBtn');
+    const nav = document.getElementById('navbar');
+    btn.addEventListener('click', () => {
+      nav.classList.toggle('menu-open');
+    });
+  </script>
+</body>
+</html>
